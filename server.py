@@ -3,15 +3,21 @@ import socket
 from colorama import init, Fore, Style
 init()
 
-
-
-HOST = '192.168.20.67'
+HOST = '127.0.0.1'
 PORT = 9090 
 
 # creo el socket tcp ,lo instancio, genero cola de conexiones
-server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-server.bind((HOST,PORT))
-server.listen()
+def start_server():
+    global server
+    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    server.bind((HOST,PORT))
+    server.listen()
+    
+    
+    print(Fore.LIGHTMAGENTA_EX + Style.BRIGHT + "server is listening... "+ Style.RESET_ALL)
+    receive()
+    
+
 
 clients = []
 nicks = []
@@ -79,7 +85,6 @@ def handle(client):
 
             text = message.decode('utf-8').strip()
 
-           
             if text.endswith("/exit"):
                 
                 remove(client)
@@ -113,5 +118,5 @@ def receive():
         thread.start()
         
 
-print(Fore.LIGHTMAGENTA_EX + Style.BRIGHT + "server is listening... "+ Style.RESET_ALL)
-receive()
+if __name__ == "__main__":
+    start_server()
