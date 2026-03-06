@@ -6,34 +6,28 @@ init()
 HOST = '127.0.0.1'
 PORT = 9090 
 
-# creo el socket tcp ,lo instancio, genero cola de conexiones
-def start_server():
-    global server
+def start_server(host=HOST, port=PORT):
+    global server, clients, nicks, lock
+
+    clients = []
+    nicks = []
+    lock = threading.Lock()
+
     server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    server.bind((HOST,PORT))
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind((host, port))
     server.listen()
-    
+    server.settimeout(0.5)
     
     print(Fore.LIGHTMAGENTA_EX + Style.BRIGHT + "server is listening... "+ Style.RESET_ALL)
-    receive()
-    
+    thread = threading.Thread(target=receive, daemon=True)
+    thread.start()
 
-
-clients = []
-nicks = []
-
-# permite que solo un hilo acceda a los recursos compartidos a la vez
-lock = threading.Lock()
-
-
-# intenta enviar un mensaje al cliente y lo elimina si falla varias veces
 def broadcast(message):
     with lock:
         for client in clients:
             safe_send(client,message)
         
-
-# maneja errores y envia mensajes a clientes individuales
 def safe_send(client, message, retries=3):
     for _ in range(retries):
         try:
@@ -43,8 +37,6 @@ def safe_send(client, message, retries=3):
             continue
     remove(client) 
 
-
-# remueve a clientes de manera segura
 def remove(client):
     with lock:
             if client not in clients:
@@ -66,11 +58,9 @@ def remove(client):
     txt =(Fore.RED + Style.BRIGHT + f"{nick} left </3"+ Style.RESET_ALL)
     broadcast(txt.encode('utf-8'))
 
-# recibe, valida , retransmite mensajes
 def handle(client):
     while True:
         try:
-      
             try:
                 message = client.recv(1024)
                 
@@ -81,12 +71,8 @@ def handle(client):
             except OSError:
                 remove(client)
                 break
-
-
             text = message.decode('utf-8').strip()
-
             if text.endswith("/exit"):
-                
                 remove(client)
                 break
             
@@ -95,13 +81,14 @@ def handle(client):
             remove(client)
             break
 
-
-
-# acepta conexiones, guarda a los clientes, inicia un thread para correr una instancia por cliente
 def receive():
     while True:
-
-        client, address = server.accept()
+        try:
+            client, address = server.accept()
+        except socket.timeout:
+            continue
+        except OSError:
+            break
         print(Fore.YELLOW + Style.BRIGHT + f"connected with {str(address)}"+ Style.RESET_ALL)
         client.send('NICK'.encode('utf-8'))
         nick = client.recv(1024).decode('utf-8')
@@ -114,9 +101,18 @@ def receive():
         txt =(Fore.LIGHTGREEN_EX + Style.BRIGHT + "connected to the server"+ Style.RESET_ALL)
         client.send(txt.encode('utf-8'))
         
-        thread = threading.Thread(target=handle,args=(client,))
+        thread = threading.Thread(target=handle,args=(client,), daemon=True)
         thread.start()
-        
+
+def stop_server():
+    for client in list(clients):
+        try:
+            client.close()
+        except:
+            pass
+    clients.clear()
+    nicks.clear()
+    server.close()
 
 if __name__ == "__main__":
     start_server()
