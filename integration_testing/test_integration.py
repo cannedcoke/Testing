@@ -8,8 +8,9 @@ import pytest
 import server
 
 HOST = "127.0.0.1"
-TEST_PORT = 9191 #diffrente port for testing
+TEST_PORT = 9191 #diffrent port for testing
 TIMEOUT = 3
+ 
  
 def connect(nickname, port=TEST_PORT):
     sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -18,8 +19,6 @@ def connect(nickname, port=TEST_PORT):
     assert sock.recv(1024).decode() == 'NICK'
     sock.send(nickname.encode())
     sock.recv(1024)
-    # welcome_message = sock.recv(1024).decode()
-    # assert 'connected' in welcome_message.lower()
     return sock
 
 def receive_text(sock):
@@ -40,6 +39,7 @@ def chat_server():
 class TestConnection:
     def test_one_client_connects(self,chat_server):
         sock = connect("miki")
+        assert "miki" in server.nicks
         sock.close()
         
     def test_multiple_client_connects(self,chat_server):
@@ -51,7 +51,7 @@ class TestConnection:
             
     def test_server_tracks_nicknames(self,chat_server):
         sock = connect("cyanide")
-        time.sleep(0.5)
+        time.sleep(0.5) 
         assert "cyanide" in server.nicks 
         sock.close()
         
