@@ -4,8 +4,9 @@ from colorama import init, Fore, Style
 init()
 
 HOST = '127.0.0.1'
-PORT = 9090 
+PORT = 9092 
 
+# fuction to start the server
 def start_server(host=HOST, port=PORT):
     global server, clients, nicks, lock
 
@@ -20,7 +21,7 @@ def start_server(host=HOST, port=PORT):
     server.settimeout(0.5)
     
     print(Fore.LIGHTMAGENTA_EX + Style.BRIGHT + "server is listening... "+ Style.RESET_ALL)
-    thread = threading.Thread(target=receive, daemon=True)
+    thread = threading.Thread(target=receive)
     thread.start()
 
 def broadcast(message):

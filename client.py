@@ -3,7 +3,7 @@ import threading
 from validations import clientMsg, get_nickname
 
 HOST = '127.0.0.1'
-PORT = 9090
+PORT = 9092
 
 nickname = get_nickname()
 
