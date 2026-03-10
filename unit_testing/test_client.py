@@ -4,16 +4,24 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from validations import validate_message, validate_nickname
 import unittest
 
-class TestWriteFunction(unittest.TestCase):
+
+class TestWriteFunction(unittest.TestCase): #test suite
     
     
     # CLIENT INPUT VALIDATION TESTS--------
+# RED: se escribieron test_empty_message y test_refuse_only_spaces primero,
+#validate_message no existía todavía, por lo tanto los tests fallaron
+
+    #test methods
     def test_empty_message(self):
         self.assertFalse(validate_message(""),"empty messages are not allowed")
         
     def test_refuse_only_spaces(self):
         self.assertFalse(validate_message("    "),"spaces only are not allowed")
         
+# RED: se agregó test_refuse_long_messages, el test falló porque
+#todavía no existía la validación de longitud
+
     def test_refuse_long_messages(self):
         self.assertFalse(validate_message("a"*51),"message too long")
         
@@ -23,7 +31,7 @@ class TestWriteFunction(unittest.TestCase):
     def test_valid_message_with_sapces(self):
         self.assertTrue(validate_message("  hey  "))
     
-    #CLIENT NICKNAME VALIDATION TESTS
+    #CLIENT NICKNAME VALIDATION TESTS -------------------
     
     def test_empty_nickname(self):
         self.assertFalse(validate_nickname(""),"empty messages are not allowed")
